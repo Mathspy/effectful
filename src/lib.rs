@@ -1,11 +1,20 @@
-pub struct Parser;
+use chumsky::{error::Rich, Parser as _};
+
+pub struct Parser<'a, 'b>
+where
+    'a: 'b,
+{
+    inner: chumsky::Boxed<'a, 'b, &'a str, AST, chumsky::extra::Err<Rich<'a, char>>>,
+}
 
 #[derive(Debug, PartialEq)]
 pub struct AST;
 
-impl Parser {
+impl<'a, 'b> Parser<'a, 'b> {
     pub fn new() -> Self {
-        Parser
+        Parser {
+            inner: chumsky::primitive::todo().boxed(),
+        }
     }
 
     pub fn parse(&self, _file: &str) -> AST {
@@ -13,7 +22,7 @@ impl Parser {
     }
 }
 
-impl Default for Parser {
+impl<'a, 'b> Default for Parser<'a, 'b> {
     fn default() -> Self {
         Self::new()
     }
