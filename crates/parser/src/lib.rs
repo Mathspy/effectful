@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use chumsky::{error::Rich, IterParser as _, ParseResult, Parser as _};
+use serde::{Deserialize, Serialize};
 
 pub struct Parser<'a, 'b>
 where
@@ -9,30 +10,30 @@ where
     inner: chumsky::Boxed<'a, 'b, &'a str, AST, chumsky::extra::Err<Rich<'a, char>>>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct AST {
     pub module: HashMap<String, ModuleItem>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub enum Ty {
     Html,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct FunctionCallExpr {
     pub name: String,
     pub args: Vec<Expr>,
     pub children: Vec<Expr>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub enum Expr {
     StringLiteral(String),
     FunctionCall(FunctionCallExpr),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Function {
     pub name: String,
     pub inputs: (),
@@ -40,7 +41,7 @@ pub struct Function {
     pub body: Vec<Expr>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub enum ModuleItem {
     Function(Function),
 }
