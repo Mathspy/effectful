@@ -11,37 +11,37 @@ where
 
 #[derive(Debug, PartialEq)]
 pub struct AST {
-    module: HashMap<String, ModuleItem>,
+    pub module: HashMap<String, ModuleItem>,
 }
 
 #[derive(Debug, PartialEq)]
-enum Ty {
+pub enum Ty {
     Html,
 }
 
 #[derive(Debug, PartialEq)]
-struct FunctionCallExpr {
-    name: String,
-    args: Vec<Expr>,
-    children: Vec<Expr>,
+pub struct FunctionCallExpr {
+    pub name: String,
+    pub args: Vec<Expr>,
+    pub children: Vec<Expr>,
 }
 
 #[derive(Debug, PartialEq)]
-enum Expr {
+pub enum Expr {
     StringLiteral(String),
     FunctionCall(FunctionCallExpr),
 }
 
 #[derive(Debug, PartialEq)]
-struct Function {
-    name: String,
-    inputs: (),
-    output: Ty,
-    body: Vec<Expr>,
+pub struct Function {
+    pub name: String,
+    pub inputs: (),
+    pub output: Ty,
+    pub body: Vec<Expr>,
 }
 
 #[derive(Debug, PartialEq)]
-enum ModuleItem {
+pub enum ModuleItem {
     Function(Function),
 }
 
