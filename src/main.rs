@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use effectful::Parser;
+use parser::Parser;
 
 fn main() {
     let mut buffer = Vec::new();
