@@ -1,0 +1,43 @@
+{
+  "output": {
+    "module": {
+      "main": {
+        "Function": {
+          "name": "main",
+          "inputs": null,
+          "output": "Html",
+          "body": [
+            {
+              "FunctionCall": {
+                "name": "Html",
+                "args": [],
+                "children": [
+                  {
+                    "FunctionCall": {
+                      "name": "Body",
+                      "args": [],
+                      "children": [
+                        {
+                          "FunctionCall": {
+                            "name": "Paragraph",
+                            "args": [
+                              {
+                                "StringLiteral": "Hello, world!"
+                              }
+                            ],
+                            "children": []
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "errors": []
+}
