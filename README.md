@@ -1,5 +1,11 @@
 # Effectful
 
+Effectful is a programming language which is an attempt at reinventing web
+development with hugs and cuddles, highly experimental and a work in progress as
+of right now.
+
+The name Effectful is NOT final and is nothing but a placeholder.
+
 ## License
 
 Effectful is free, open source and permissively licensed!
