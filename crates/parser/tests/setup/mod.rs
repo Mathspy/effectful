@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! setup {
-    ($code:expr) => {
+    ($test_name:ident; $code:expr) => {
         use std::path::Path;
 
         use parser::{Parser, AST};
@@ -98,7 +98,7 @@ macro_rules! setup {
         }
 
         #[test]
-        fn hello_world() {
+        fn $test_name() {
             // TODO: We get the test path via a hacky solution that relies on this test being in
             // crates/crate_name/tests/folder because file!() does not interact very nicely with
             // env::current_dir()

@@ -2,7 +2,7 @@ mod setup;
 
 #[rustfmt::skip::macros(setup)]
 
-setup!(r#"
+setup!(hello_world; r#"
 
 fn main() -> Html {
     Html {
