@@ -1,0 +1,23 @@
+{
+  "output": {
+    "module": {
+      "main": {
+        "Function": {
+          "name": "main",
+          "inputs": null,
+          "output": "Html",
+          "body": [
+            {
+              "FunctionCall": {
+                "name": "Html",
+                "args": [],
+                "children": []
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "errors": []
+}

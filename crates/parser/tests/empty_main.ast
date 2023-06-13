@@ -1,0 +1,15 @@
+{
+  "output": {
+    "module": {
+      "main": {
+        "Function": {
+          "name": "main",
+          "inputs": null,
+          "output": "Html",
+          "body": []
+        }
+      }
+    }
+  },
+  "errors": []
+}
