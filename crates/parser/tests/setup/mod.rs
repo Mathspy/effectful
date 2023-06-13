@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! setup {
-    () => {
+    ($code:expr) => {
         use std::path::Path;
 
         use parser::{Parser, AST};
@@ -140,17 +140,7 @@ macro_rules! setup {
             };
 
             let parser = Parser::new();
-            let ast = parser.parse(
-                r#"
-        fn main() -> Html {
-            Html {
-                Body {
-                    Paragraph("Hello, world!")
-                }
-            }
-        }
-        "#,
-            );
+            let ast = parser.parse($code);
 
             let (output, errors) = ast.into_output_errors();
 
