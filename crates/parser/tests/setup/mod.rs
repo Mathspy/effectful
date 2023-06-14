@@ -16,7 +16,7 @@ macro_rules! setup {
         }
 
         impl RichPattern {
-            fn from_chumsky<'a>(chumsky: chumsky::error::RichPattern<'a, char>) -> Self {
+            fn from_chumsky(chumsky: chumsky::error::RichPattern<'_, char>) -> Self {
                 use chumsky::{error::RichPattern, util::Maybe};
 
                 match chumsky {
@@ -39,7 +39,7 @@ macro_rules! setup {
         }
 
         impl RichReason {
-            fn from_chumsky<'a>(chumsky: chumsky::error::RichReason<'a, char>) -> Self {
+            fn from_chumsky(chumsky: chumsky::error::RichReason<'_, char>) -> Self {
                 use chumsky::{error::RichReason, util::Maybe};
 
                 match chumsky {
@@ -83,7 +83,7 @@ macro_rules! setup {
         }
 
         impl Rich {
-            fn from_chumsky<'a>(chumsky: chumsky::error::Rich<'a, char>) -> Self {
+            fn from_chumsky(chumsky: chumsky::error::Rich<'_, char>) -> Self {
                 Self {
                     span: SimpleSpan::from_chumsky(*chumsky.span()),
                     reason: RichReason::from_chumsky(chumsky.into_reason()),
