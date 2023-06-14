@@ -1,7 +1,5 @@
 use std::io::Read;
 
-use parser::Parser;
-
 fn main() {
     let mut buffer = Vec::new();
     let stdin = std::io::stdin();
@@ -12,7 +10,6 @@ fn main() {
 
     let input = std::str::from_utf8(&buffer).expect("valid utf8 input");
 
-    let parser = Parser::new();
-    let ast = parser.parse(input);
-    dbg!(ast);
+    let output = effectful::compile(input);
+    println!("{output}");
 }
