@@ -76,7 +76,7 @@ mod tests {
                 ModuleItem::Function(Function {
                     name: "main".to_string(),
                     inputs: (),
-                    output: Ty::Html,
+                    output: Ty::Simple("Html".to_string()),
                     body: parser::BlockExpr {
                         statements: vec![],
                         return_expression: Some(Expr::FunctionCall(FunctionCallExpr {

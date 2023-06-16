@@ -5,7 +5,9 @@
         "Function": {
           "name": "main",
           "inputs": null,
-          "output": "Html",
+          "output": {
+            "Simple": "Html"
+          },
           "body": {
             "statements": [],
             "return_expression": {

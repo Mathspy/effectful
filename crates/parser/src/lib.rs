@@ -17,7 +17,9 @@ pub struct AST {
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub enum Ty {
-    Html,
+    // TODO: This can be upgraded later to Path
+    // ref: https://doc.rust-lang.org/stable/reference/paths.html#paths-in-types
+    Simple(String),
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -139,7 +141,7 @@ impl<'a, 'b> Parser<'a, 'b> {
                 ModuleItem::Function(Function {
                     name: name.to_string(),
                     inputs: (),
-                    output: if output == "Html" { Ty::Html } else { todo!() },
+                    output: Ty::Simple(output.to_string()),
                     body,
                 })
             })
