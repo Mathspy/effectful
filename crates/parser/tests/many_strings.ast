@@ -1,0 +1,33 @@
+{
+  "output": {
+    "module": {
+      "main": {
+        "Function": {
+          "name": "main",
+          "inputs": null,
+          "output": {
+            "Simple": "String"
+          },
+          "body": {
+            "statements": [
+              {
+                "ExprStatement": {
+                  "StringLiteral": "I am a string!"
+                }
+              },
+              {
+                "ExprStatement": {
+                  "StringLiteral": "Oh look at me, I am another string"
+                }
+              }
+            ],
+            "return_expression": {
+              "StringLiteral": "sadly neither of them will lead to change :<"
+            }
+          }
+        }
+      }
+    }
+  },
+  "errors": []
+}
