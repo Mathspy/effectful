@@ -37,6 +37,18 @@ pub fn generate_call_graph(ast: &AST) -> Graph<String, ()> {
     let parser::ModuleItem::Function(main) = main;
 
     main.body
+        .statements
+        .iter()
+        .flat_map(|statement| match statement {
+            parser::Statement::ExprStatement(expr) => get_function_calls(expr),
+        })
+        .for_each(|call| {
+            let node = graph.add_node(call.name.clone());
+            graph.add_edge(main_node, node, ());
+        });
+
+    main.body
+        .return_expression
         .iter()
         .flat_map(get_function_calls)
         .for_each(|call| {
@@ -65,19 +77,22 @@ mod tests {
                     name: "main".to_string(),
                     inputs: (),
                     output: Ty::Html,
-                    body: vec![Expr::FunctionCall(FunctionCallExpr {
-                        name: "Html".to_string(),
-                        children: vec![Expr::FunctionCall(FunctionCallExpr {
-                            name: "Body".to_string(),
+                    body: parser::BlockExpr {
+                        statements: vec![],
+                        return_expression: Some(Expr::FunctionCall(FunctionCallExpr {
+                            name: "Html".to_string(),
                             children: vec![Expr::FunctionCall(FunctionCallExpr {
-                                name: "Paragraph".to_string(),
-                                children: vec![],
-                                args: vec![Expr::StringLiteral("Hello, world!".to_string())],
+                                name: "Body".to_string(),
+                                children: vec![Expr::FunctionCall(FunctionCallExpr {
+                                    name: "Paragraph".to_string(),
+                                    children: vec![],
+                                    args: vec![Expr::StringLiteral("Hello, world!".to_string())],
+                                })],
+                                args: vec![],
                             })],
                             args: vec![],
-                        })],
-                        args: vec![],
-                    })],
+                        })),
+                    },
                 }),
             )]
             .map(|(name, val)| (name.to_string(), val))

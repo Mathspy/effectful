@@ -17,7 +17,8 @@ impl Generator {
         // TODO: Handle main not having a last expression
         let ret = main
             .body
-            .last()
+            .return_expression
+            .as_ref()
             .expect("main must have a return value of Html");
 
         self.expr_to_html(ret)

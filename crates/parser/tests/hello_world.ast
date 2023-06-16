@@ -6,8 +6,9 @@
           "name": "main",
           "inputs": null,
           "output": "Html",
-          "body": [
-            {
+          "body": {
+            "statements": [],
+            "return_expression": {
               "FunctionCall": {
                 "name": "Html",
                 "args": [],
@@ -34,7 +35,7 @@
                 ]
               }
             }
-          ]
+          }
         }
       }
     }
