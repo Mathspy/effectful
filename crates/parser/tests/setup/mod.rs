@@ -99,6 +99,10 @@ macro_rules! setup {
 
         #[test]
         fn $test_name() {
+            // If the EFF_OVERRIDE_SNAPSHOTS env variable is at all set then we will override even
+            // if the .ast files contain invalid ASTs, which happens often during parser development
+            let override_snapshots = std::env::var("EFF_OVERRIDE_SNAPSHOTS").ok().is_some();
+
             // TODO: We get the test path via a hacky solution that relies on this test being in
             // crates/crate_name/tests/folder because file!() does not interact very nicely with
             // env::current_dir()
@@ -133,6 +137,7 @@ macro_rules! setup {
             let snapshot = match snapshot_file {
                 Ok(snapshot) => match serde_json::from_reader::<_, ParseResult>(snapshot) {
                     Ok(snapshot) => Some(snapshot),
+                    Err(_) if override_snapshots => None,
                     Err(error) => panic!("Error while parsing snapshot file {snapshot_file_name}: {error}"),
                 },
                 Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
@@ -149,8 +154,6 @@ macro_rules! setup {
                 errors: errors.into_iter().map(Rich::from_chumsky).collect(),
             };
 
-            // If the EFF_OVERRIDE_SNAPSHOTS  env variable is at all set then we will override
-            let override_snapshots = std::env::var("EFF_OVERRIDE_SNAPSHOTS").ok().is_some();
             let snapshot_file = match (snapshot, override_snapshots) {
                 // If the snapshot matches we are done!
                 (Some(snapshot), _) if snapshot.eq(&result) => {
@@ -162,14 +165,9 @@ macro_rules! setup {
                     panic!("Snapshot mismatched, to override set env var EFF_OVERRIDE_SNAPSHOTS to 1");
                 }
                 // If they don't match and we are allowed to override, get write access to file
-                (Some(_), true) => std::fs::File::options()
+                (_, true) | (None, _) => std::fs::File::options()
                     .write(true)
                     .truncate(true)
-                    .open(&snapshot_file_path),
-                // If it doesn't exist, then write it
-                (None, _) => std::fs::File::options()
-                    .write(true)
-                    .create_new(true)
                     .open(&snapshot_file_path),
             };
 
