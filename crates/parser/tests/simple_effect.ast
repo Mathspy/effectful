@@ -9,17 +9,13 @@
             "ty": {
               "Simple": "Html"
             },
-            "eff": null
+            "eff": {
+              "Simple": "Console"
+            }
           },
           "body": {
             "statements": [],
-            "return_expression": {
-              "FunctionCall": {
-                "name": "Html",
-                "args": [],
-                "children": []
-              }
-            }
+            "return_expression": null
           }
         }
       }

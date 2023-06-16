@@ -23,6 +23,13 @@ pub enum Ty {
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub enum Eff {
+    // TODO: This can be upgraded later to Path as well
+    // ref: https://doc.rust-lang.org/stable/reference/paths.html#paths-in-types
+    Simple(String),
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct FunctionCallExpr {
     pub name: String,
     pub args: Vec<Expr>,
@@ -48,10 +55,16 @@ pub enum Statement {
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct FunctionOutput {
+    pub ty: Ty,
+    pub eff: Option<Eff>,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Function {
     pub name: String,
     pub inputs: (),
-    pub output: Ty,
+    pub output: FunctionOutput,
     pub body: BlockExpr,
 }
 
@@ -129,19 +142,27 @@ impl<'a, 'b> Parser<'a, 'b> {
                 .map(Statement::ExprStatement),
         );
 
+        let function_output_parser = ident()
+            .padded()
+            .then(just("eff").ignore_then(ident().padded()).or_not())
+            .map(|(ty, eff): (&str, Option<&str>)| FunctionOutput {
+                ty: Ty::Simple(ty.to_string()),
+                eff: eff.map(|eff| Eff::Simple(eff.to_string())),
+            });
+
         let fn_parser = just("fn")
             .then_ignore(just(" "))
             .padded()
             .ignore_then(ident())
             .then_ignore(just("()"))
             .then_ignore(just("->").padded())
-            .then(ident().padded())
+            .then(function_output_parser)
             .then(block_parser)
             .map(|((name, output), body)| {
                 ModuleItem::Function(Function {
                     name: name.to_string(),
                     inputs: (),
-                    output: Ty::Simple(output.to_string()),
+                    output,
                     body,
                 })
             })

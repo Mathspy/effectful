@@ -63,7 +63,7 @@ pub fn generate_call_graph(ast: &AST) -> Graph<String, ()> {
 mod tests {
     use std::collections::BTreeSet;
 
-    use parser::{Expr, Function, FunctionCallExpr, ModuleItem, Ty, AST};
+    use parser::{Expr, Function, FunctionCallExpr, FunctionOutput, ModuleItem, Ty, AST};
     use petgraph::Direction;
 
     use super::generate_call_graph;
@@ -76,7 +76,10 @@ mod tests {
                 ModuleItem::Function(Function {
                     name: "main".to_string(),
                     inputs: (),
-                    output: Ty::Simple("Html".to_string()),
+                    output: FunctionOutput {
+                        ty: Ty::Simple("Html".to_string()),
+                        eff: None,
+                    },
                     body: parser::BlockExpr {
                         statements: vec![],
                         return_expression: Some(Expr::FunctionCall(FunctionCallExpr {

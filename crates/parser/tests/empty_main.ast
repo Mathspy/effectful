@@ -6,7 +6,10 @@
           "name": "main",
           "inputs": null,
           "output": {
-            "Simple": "Html"
+            "ty": {
+              "Simple": "Html"
+            },
+            "eff": null
           },
           "body": {
             "statements": [],
