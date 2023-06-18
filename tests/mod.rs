@@ -1,1 +1,1 @@
-mod ui;
+mod generate;
