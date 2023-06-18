@@ -1,12 +1,12 @@
 mod hir;
 
-use parser::{Expr, FunctionCallExpr, AST};
-use petgraph::Graph;
+use hir::Hir;
+use petgraph::graphmap::DiGraphMap;
 
-fn get_function_calls(expr: &Expr) -> Vec<&FunctionCallExpr> {
+fn get_function_calls(expr: &hir::Expr) -> Vec<&hir::FunctionCallExpr> {
     match expr {
-        parser::Expr::StringLiteral(_) => Vec::new(),
-        parser::Expr::FunctionCall(call) => {
+        hir::Expr::StringLiteral(_) => Vec::new(),
+        hir::Expr::FunctionCall(call) => {
             let mut vec = vec![call];
 
             let from_args = call
@@ -28,23 +28,23 @@ fn get_function_calls(expr: &Expr) -> Vec<&FunctionCallExpr> {
     }
 }
 
-pub fn generate_call_graph(ast: &AST) -> Graph<String, ()> {
-    let mut graph = Graph::new();
+pub fn generate_call_graph(ast: &Hir) -> DiGraphMap<hir::Id, ()> {
+    let mut graph = DiGraphMap::new();
 
     ast.module.iter().for_each(|(name, item)| {
-        let parser::ModuleItem::Function(function) = item;
+        let hir::ModuleItem::Function(function) = item;
 
-        let function_node = graph.add_node(name.clone());
+        let function_node = graph.add_node(*name);
 
         function
             .body
             .statements
             .iter()
             .flat_map(|statement| match statement {
-                parser::Statement::ExprStatement(expr) => get_function_calls(expr),
+                hir::Statement::ExprStatement(expr) => get_function_calls(expr),
             })
             .for_each(|call| {
-                let node = graph.add_node(call.name.clone());
+                let node = graph.add_node(call.name);
                 graph.add_edge(function_node, node, ());
             });
 
@@ -54,7 +54,7 @@ pub fn generate_call_graph(ast: &AST) -> Graph<String, ()> {
             .iter()
             .flat_map(get_function_calls)
             .for_each(|call| {
-                let node = graph.add_node(call.name.clone());
+                let node = graph.add_node(call.name);
                 graph.add_edge(function_node, node, ());
             });
     });
@@ -64,12 +64,11 @@ pub fn generate_call_graph(ast: &AST) -> Graph<String, ()> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeSet;
+    use std::{collections::BTreeSet, sync::Arc};
 
     use parser::Parser;
-    use petgraph::Direction;
 
-    use super::generate_call_graph;
+    use super::{generate_call_graph, hir::Hir};
 
     #[test]
     fn hello_world() {
@@ -91,22 +90,25 @@ fn main() -> Html {
             .into_output()
             .unwrap();
 
-        let graph = generate_call_graph(&ast);
+        let hir = Hir::lower(&ast);
+        let graph = generate_call_graph(&hir);
 
-        let main = graph
-            .node_indices()
-            .find(|index| graph[*index] == "main")
-            .unwrap();
+        let main = hir
+            .id_map
+            .iter()
+            .find_map(|(id, name)| if &**name == "main" { Some(id) } else { None })
+            .copied()
+            .expect("there to be a main in HIR id map");
 
         let neighbors = graph
-            .neighbors_directed(main, Direction::Outgoing)
-            .map(|index| graph[index].clone())
+            .neighbors(main)
+            .map(|neighbor| hir.id_map.get(&neighbor).unwrap().clone())
             .collect::<BTreeSet<_>>();
 
         assert_eq!(
             neighbors,
             ["Html", "Body", "Paragraph"]
-                .map(|name| name.to_string())
+                .map(Arc::from)
                 .into_iter()
                 .collect()
         );
