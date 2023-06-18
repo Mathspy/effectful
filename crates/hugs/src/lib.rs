@@ -63,45 +63,30 @@ pub fn generate_call_graph(ast: &AST) -> Graph<String, ()> {
 mod tests {
     use std::collections::BTreeSet;
 
-    use parser::{Expr, Function, FunctionCallExpr, FunctionOutput, ModuleItem, Ty, AST};
+    use parser::Parser;
     use petgraph::Direction;
 
     use super::generate_call_graph;
 
     #[test]
     fn hello_world() {
-        let ast = AST {
-            module: [(
-                "main",
-                ModuleItem::Function(Function {
-                    name: "main".to_string(),
-                    inputs: (),
-                    output: FunctionOutput {
-                        ty: Ty::Simple("Html".to_string()),
-                        eff: None,
-                    },
-                    body: parser::BlockExpr {
-                        statements: vec![],
-                        return_expression: Some(Expr::FunctionCall(FunctionCallExpr {
-                            name: "Html".to_string(),
-                            children: vec![Expr::FunctionCall(FunctionCallExpr {
-                                name: "Body".to_string(),
-                                children: vec![Expr::FunctionCall(FunctionCallExpr {
-                                    name: "Paragraph".to_string(),
-                                    children: vec![],
-                                    args: vec![Expr::StringLiteral("Hello, world!".to_string())],
-                                })],
-                                args: vec![],
-                            })],
-                            args: vec![],
-                        })),
-                    },
-                }),
-            )]
-            .map(|(name, val)| (name.to_string(), val))
-            .into_iter()
-            .collect(),
-        };
+        let parser = Parser::new();
+        let ast = parser
+            .parse(
+                r#"
+
+fn main() -> Html {
+    Html {
+        Body {
+            Paragraph("Hello, world!")
+        }
+    }
+}
+
+"#,
+            )
+            .into_output()
+            .unwrap();
 
         let graph = generate_call_graph(&ast);
 
