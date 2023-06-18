@@ -1,3 +1,5 @@
+mod hir;
+
 use parser::{Expr, FunctionCallExpr, AST};
 use petgraph::Graph;
 

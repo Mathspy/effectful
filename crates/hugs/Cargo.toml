@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 parser = { path = "../parser" }
 petgraph = { version = "0.6.3", default-features = false }
+rand = "0.8.5"
 
