@@ -29,32 +29,33 @@ fn get_function_calls(expr: &Expr) -> Vec<&FunctionCallExpr> {
 pub fn generate_call_graph(ast: &AST) -> Graph<String, ()> {
     let mut graph = Graph::new();
 
-    // TODO: Handle generating graphs for functions besides main
-    let main = ast.module.get("main").expect("main is missing");
+    ast.module.iter().for_each(|(name, item)| {
+        let parser::ModuleItem::Function(function) = item;
 
-    let main_node = graph.add_node("main".to_string());
+        let function_node = graph.add_node(name.clone());
 
-    let parser::ModuleItem::Function(main) = main;
+        function
+            .body
+            .statements
+            .iter()
+            .flat_map(|statement| match statement {
+                parser::Statement::ExprStatement(expr) => get_function_calls(expr),
+            })
+            .for_each(|call| {
+                let node = graph.add_node(call.name.clone());
+                graph.add_edge(function_node, node, ());
+            });
 
-    main.body
-        .statements
-        .iter()
-        .flat_map(|statement| match statement {
-            parser::Statement::ExprStatement(expr) => get_function_calls(expr),
-        })
-        .for_each(|call| {
-            let node = graph.add_node(call.name.clone());
-            graph.add_edge(main_node, node, ());
-        });
-
-    main.body
-        .return_expression
-        .iter()
-        .flat_map(get_function_calls)
-        .for_each(|call| {
-            let node = graph.add_node(call.name.clone());
-            graph.add_edge(main_node, node, ());
-        });
+        function
+            .body
+            .return_expression
+            .iter()
+            .flat_map(get_function_calls)
+            .for_each(|call| {
+                let node = graph.add_node(call.name.clone());
+                graph.add_edge(function_node, node, ());
+            });
+    });
 
     graph
 }
