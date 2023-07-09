@@ -1,5 +1,8 @@
 #![allow(dead_code)]
 
+mod html;
+
+use html::{Child, Element, HtmlWriter};
 use parser::{Expr, FunctionCallExpr, ModuleItem, AST};
 
 pub struct Generator;
@@ -23,7 +26,15 @@ impl Generator {
             .as_ref()
             .expect("main must have a return value of Html");
 
-        self.expr_to_html(ret)
+        let element = match self.expr_to_html(ret) {
+            Child::Element(element) => element,
+            Child::Text(_) => unreachable!("We should verify the type is Html not a string"),
+        };
+
+        let mut buf = Vec::new();
+        let mut writer = HtmlWriter::new(&mut buf);
+        writer.write_element(&element).unwrap();
+        String::from_utf8(buf).unwrap()
     }
 
     // TODO: This will eventually need to be rewriting in effectful itself and be completed
@@ -37,17 +48,20 @@ impl Generator {
     }
 
     #[allow(clippy::only_used_in_recursion)]
-    fn expr_to_html(&self, expr: &Expr) -> String {
+    fn expr_to_html(&self, expr: &Expr) -> Child {
         match expr {
-            Expr::StringLiteral(string_literal) => string_literal.clone(),
+            Expr::StringLiteral(string_literal) => Child::Text(string_literal.clone()),
             Expr::FunctionCall(call) => {
                 let (tag, children) = Self::html_std(call);
                 let children = children
                     .iter()
                     .map(|expr| self.expr_to_html(expr))
-                    .collect::<String>();
+                    .collect::<Vec<Child>>();
 
-                format!("<{tag}>{children}</{tag}>")
+                Child::Element(Element {
+                    name: tag.to_owned(),
+                    children,
+                })
             }
         }
     }
