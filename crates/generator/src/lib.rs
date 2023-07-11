@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+mod ecma;
 mod html;
 
 use html::{Child, Element, HtmlWriter};
