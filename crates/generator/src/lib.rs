@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use parser::{Expr, FunctionCallExpr, ModuleItem, AST};
 
 pub struct Generator;
