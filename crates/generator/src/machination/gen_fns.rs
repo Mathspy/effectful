@@ -1,6 +1,6 @@
 use crate::ecma::{
-    block, boolean, break_statement, declare, ident, if_statement, int, obj_pat, string,
-    while_statement, Program,
+    array, block, boolean, break_statement, declare, ident, if_statement, int, obj, obj_pat,
+    string, while_statement, yield_, Program, Statement,
 };
 
 pub fn machination() -> Program {
@@ -49,6 +49,34 @@ pub fn machination() -> Program {
                 .into_statement()
                 .or_declaration(),
         ],
+    }
+}
+
+pub fn effect(eff: &str, extra: &[parser::Expr]) -> Statement {
+    match eff {
+        "Console" => yield_(
+            obj(vec![
+                ("ty", Some(string("__CONSOLE__").into_expression())),
+                (
+                    "args",
+                    Some(
+                        array(
+                            extra
+                                .iter()
+                                .map(|expr| match expr {
+                                    parser::Expr::StringLiteral(s) => string(s).into_expression(),
+                                    _ => unreachable!(),
+                                })
+                                .collect(),
+                        )
+                        .into_expression(),
+                    ),
+                ),
+            ])
+            .into_expression(),
+        )
+        .into_statement(),
+        _ => todo!(),
     }
 }
 
