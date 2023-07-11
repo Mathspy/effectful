@@ -9,6 +9,7 @@ pub enum StatementOrDeclaration {
     Declaration(Declaration),
 }
 
+#[allow(dead_code)]
 pub enum Statement {
     Block(BlockStatement),
     While(WhileStatement),
@@ -131,6 +132,7 @@ impl VariableDeclaration {
     }
 }
 
+#[allow(dead_code)]
 pub enum VariableDeclarationKind {
     Var,
     Let,
@@ -195,6 +197,7 @@ pub mod declare {
         }
     }
 
+    #[allow(dead_code)]
     pub fn variable() -> VariableDeclarationBuilder {
         VariableDeclarationBuilder {
             kind: VariableDeclarationKind::Let,
@@ -244,6 +247,7 @@ impl Identifier {
         })
     }
 
+    #[allow(dead_code)]
     pub fn dyn_member_access(self, member: Expression) -> MemberExpression {
         MemberExpression::ComputedMemberExpression(ComputedMemberExpression {
             object: Box::new(Expression::Ident(self)),
@@ -292,6 +296,7 @@ pub struct ObjectPatternProperty {
     pub value: Option<Identifier>,
 }
 
+#[allow(dead_code)]
 pub enum Expression {
     Ident(Identifier),
     Call(CallExpression),
@@ -309,10 +314,12 @@ impl Expression {
         Box::new(self)
     }
 
+    #[allow(dead_code)]
     pub fn into_statement(self) -> Statement {
         Statement::Expression(ExpressionStatement(self))
     }
 
+    #[allow(dead_code)]
     pub fn call(self, arguments: Vec<Expression>) -> CallExpression {
         CallExpression {
             callee: self.boxed(),
@@ -432,6 +439,7 @@ impl StringLiteral {
     }
 }
 
+#[allow(dead_code)]
 pub enum NumberLiteral {
     Integer(u32),
     Float(f64),

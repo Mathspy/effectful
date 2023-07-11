@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 mod ecma;
 mod html;
 mod machination;
