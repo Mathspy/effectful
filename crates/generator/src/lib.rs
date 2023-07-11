@@ -5,7 +5,7 @@ mod html;
 mod machination;
 
 use html::{Child, Element, HtmlWriter};
-use parser::{Expr, FunctionCallExpr, ModuleItem, AST};
+use parser::{Expr, FunctionCallExpr, ModuleItem, Statement, AST};
 
 pub struct Generator;
 
@@ -28,12 +28,54 @@ impl Generator {
             .as_ref()
             .expect("main must have a return value of Html");
 
-        let element = match self.expr_to_html(ret) {
+        let machination = if let Some(effect) = &main.output.eff {
+            match effect {
+                parser::Eff::Simple(effect) if effect == "Console" => {
+                    Some(machination::gen_fns::machination())
+                }
+                _ => todo!(),
+            }
+        } else {
+            None
+        };
+
+        let main_code = main
+            .body
+            .statements
+            .iter()
+            .map(|statement| self.stmt_to_js(statement))
+            .map(|statement| statement.or_declaration())
+            .collect::<Vec<_>>();
+
+        let mut element = match self.expr_to_html(ret) {
             Child::Element(element) => element,
             Child::Text(_) | Child::Script(_) => {
                 unreachable!("We should verify the type is Html not a string")
             }
         };
+
+        if let Some(machination) = machination {
+            assert!(element.name == "html");
+            let body = element.children.iter_mut().find_map(|child| match child {
+                Child::Element(element) if element.name == "body" => Some(element),
+                _ => None,
+            });
+
+            let main_fn = ecma::declare::gen_func(ecma::ident("main"))
+                .body(ecma::block(main_code))
+                .into_declaration()
+                .or_statement();
+
+            match body {
+                Some(body) => {
+                    body.children.push(Child::Script(ecma::Program {
+                        body: vec![main_fn],
+                    }));
+                    body.children.push(Child::Script(machination));
+                }
+                None => todo!(),
+            }
+        }
 
         let mut buf = Vec::new();
         let mut writer = HtmlWriter::new(&mut buf);
@@ -48,6 +90,14 @@ impl Generator {
             "Body" => ("body", &call.children),
             "Paragraph" => ("p", &call.args[..1]),
             _ => todo!(),
+        }
+    }
+
+    // TODO: This will eventually need to be rewriting in effectful itself
+    fn eff_std(call: &FunctionCallExpr) -> Option<(&'static str, &[Expr])> {
+        match &call.name[..] {
+            "log" => Some(("Console", &call.args)),
+            _ => None,
         }
     }
 
@@ -67,6 +117,21 @@ impl Generator {
                     children,
                 })
             }
+        }
+    }
+
+    fn stmt_to_js(&self, statement: &Statement) -> ecma::Statement {
+        match statement {
+            Statement::ExprStatement(expr) => match expr {
+                Expr::StringLiteral(_) => todo!(),
+                Expr::FunctionCall(fn_call) => {
+                    if let Some((eff, extra)) = Self::eff_std(fn_call) {
+                        machination::gen_fns::effect(eff, extra)
+                    } else {
+                        todo!()
+                    }
+                }
+            },
         }
     }
 }
