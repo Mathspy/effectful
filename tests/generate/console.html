@@ -1,0 +1,1 @@
+<html><body><p>Hello, world!</p><script>function* main(){yield {ty:"__CONSOLE__",args:["Hello",],};yield {ty:"__CONSOLE__",args:["World",],};}</script><script>const main_call=main();while(true){const {done,value:eff,}=main_call.next();if(done){break;}if(eff.ty==="__CONSOLE__"){console.log(eff.args[0],);}}</script></body></html>
