@@ -30,7 +30,9 @@ impl Generator {
 
         let element = match self.expr_to_html(ret) {
             Child::Element(element) => element,
-            Child::Text(_) => unreachable!("We should verify the type is Html not a string"),
+            Child::Text(_) | Child::Script(_) => {
+                unreachable!("We should verify the type is Html not a string")
+            }
         };
 
         let mut buf = Vec::new();

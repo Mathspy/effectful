@@ -1,5 +1,7 @@
 use std::io;
 
+use crate::ecma::{writer::EcmaWriter, Program};
+
 pub struct HtmlWriter<W> {
     writer: W,
 }
@@ -36,6 +38,18 @@ where
         match child {
             Child::Element(element) => self.write_element(element),
             Child::Text(text) => self.writer.write(text.as_bytes()),
+            Child::Script(program) => {
+                let mut bytes_written = 0;
+
+                bytes_written += self.writer.write(b"<script>")?;
+
+                let mut ecma_writer = EcmaWriter::new(&mut self.writer);
+                bytes_written += ecma_writer.write_program(program)?;
+
+                bytes_written += self.writer.write(b"</script>")?;
+
+                Ok(bytes_written)
+            }
         }
     }
 }
@@ -48,4 +62,5 @@ pub struct Element {
 pub enum Child {
     Element(Element),
     Text(String),
+    Script(Program),
 }
