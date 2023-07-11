@@ -2,6 +2,7 @@
 
 mod ecma;
 mod html;
+mod machination;
 
 use html::{Child, Element, HtmlWriter};
 use parser::{Expr, FunctionCallExpr, ModuleItem, AST};
