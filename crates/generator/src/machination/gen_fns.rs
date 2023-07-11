@@ -54,7 +54,7 @@ pub fn machination() -> Program {
 
 #[cfg(test)]
 mod tests {
-    use crate::ecma::EcmaWriter;
+    use crate::ecma::writer::EcmaWriter;
 
     // TODO: This test should be redundant once we have a full generation test
     #[test]
