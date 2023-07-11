@@ -260,6 +260,8 @@ pub enum Expression {
     Literal(LiteralExpression),
     Member(MemberExpression),
     Binary(BinaryExpression),
+    Yield(YieldExpression),
+    Object(ObjectExpression),
 }
 
 impl Expression {
@@ -402,5 +404,48 @@ pub fn int(n: u32) -> NumberLiteral {
 impl NumberLiteral {
     pub fn into_expression(self) -> Expression {
         Expression::Literal(LiteralExpression::Number(self))
+    }
+}
+
+pub struct YieldExpression {
+    pub argument: Box<Expression>,
+}
+
+pub fn yield_(argument: Expression) -> YieldExpression {
+    YieldExpression {
+        argument: argument.boxed(),
+    }
+}
+
+impl YieldExpression {
+    pub fn into_statement(self) -> Statement {
+        Statement::Expression(ExpressionStatement(Expression::Yield(self)))
+    }
+}
+
+pub struct ObjectExpression {
+    pub properties: Vec<ObjectProperty>,
+}
+
+pub struct ObjectProperty {
+    key: Identifier,
+    value: Option<Expression>,
+}
+
+pub fn obj(props: Vec<(&str, Option<Expression>)>) -> ObjectExpression {
+    ObjectExpression {
+        properties: props
+            .into_iter()
+            .map(|(key, value)| ObjectProperty {
+                key: ident(key),
+                value,
+            })
+            .collect(),
+    }
+}
+
+impl ObjectExpression {
+    pub fn into_expression(self) -> Expression {
+        Expression::Object(self)
     }
 }

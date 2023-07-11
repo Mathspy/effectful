@@ -5,9 +5,10 @@ use super::{
     ArrowFunctionExpression, BinaryExpression, BinaryOperator, BlockStatement, BooleanLiteral,
     BreakStatement, CallExpression, ComputedMemberExpression, Declaration, Expression,
     ExpressionStatement, Identifier, IfStatement, LiteralExpression, MemberExpression,
-    NumberLiteral, ObjectPattern, ObjectPatternProperty, Pattern, Program, Statement,
-    StatementOrDeclaration, StaticMemberExpression, StringLiteral, VariableDeclaration,
-    VariableDeclarationKind, VariableDeclarator, WhileStatement,
+    NumberLiteral, ObjectExpression, ObjectPattern, ObjectPatternProperty, ObjectProperty, Pattern,
+    Program, Statement, StatementOrDeclaration, StaticMemberExpression, StringLiteral,
+    VariableDeclaration, VariableDeclarationKind, VariableDeclarator, WhileStatement,
+    YieldExpression,
 };
 
 pub struct EcmaWriter<W> {
@@ -220,6 +221,10 @@ where
             Expression::Binary(binary_expression) => {
                 self.write_binary_expression(binary_expression)
             }
+            Expression::Yield(yield_expression) => self.write_yield_expression(yield_expression),
+            Expression::Object(object_expression) => {
+                self.write_object_expression(object_expression)
+            }
         }
     }
 
@@ -348,6 +353,45 @@ where
             BinaryOperator::StrictEqual => self.writer.write(b"===")?,
         };
         bytes_written += self.write_expression(&binary_expression.right)?;
+
+        Ok(bytes_written)
+    }
+
+    fn write_yield_expression(&mut self, yield_expression: &YieldExpression) -> io::Result<usize> {
+        let mut bytes_written = 0;
+
+        bytes_written += self.writer.write(b"yield ")?;
+        bytes_written += self.write_expression(&yield_expression.argument)?;
+
+        Ok(bytes_written)
+    }
+
+    fn write_object_expression(
+        &mut self,
+        object_expression: &ObjectExpression,
+    ) -> io::Result<usize> {
+        let mut bytes_written = 0;
+
+        bytes_written += self.writer.write(b"{")?;
+        bytes_written += object_expression
+            .properties
+            .iter()
+            .map(|property| self.write_object_property(property))
+            .sum::<io::Result<usize>>()?;
+        bytes_written += self.writer.write(b"}")?;
+
+        Ok(bytes_written)
+    }
+
+    fn write_object_property(&mut self, property: &ObjectProperty) -> io::Result<usize> {
+        let mut bytes_written = 0;
+
+        bytes_written += self.write_identifier(&property.key)?;
+        if let Some(value) = &property.value {
+            bytes_written += self.writer.write(b":")?;
+            bytes_written += self.write_expression(value)?;
+        }
+        bytes_written += self.writer.write(b",")?;
 
         Ok(bytes_written)
     }
