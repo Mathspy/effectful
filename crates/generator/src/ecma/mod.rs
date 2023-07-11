@@ -111,6 +111,7 @@ pub struct ExpressionStatement(pub Expression);
 
 pub enum Declaration {
     Variable(VariableDeclaration),
+    Function(FunctionDeclaration),
 }
 
 impl Declaration {
@@ -141,9 +142,24 @@ pub struct VariableDeclarator {
     pub init: Expression,
 }
 
+pub struct FunctionDeclaration {
+    pub id: Identifier,
+    pub generator: bool,
+    // TODO:
+    pub params: (),
+    pub body: BlockStatement,
+}
+
+impl FunctionDeclaration {
+    pub fn into_declaration(self) -> Declaration {
+        Declaration::Function(self)
+    }
+}
+
 pub mod declare {
     use super::{
-        Expression, Pattern, VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
+        BlockStatement, Expression, FunctionDeclaration, Identifier, Pattern, VariableDeclaration,
+        VariableDeclarationKind, VariableDeclarator,
     };
 
     pub struct VariableDeclarationBuilder {
@@ -182,6 +198,29 @@ pub mod declare {
     pub fn variable() -> VariableDeclarationBuilder {
         VariableDeclarationBuilder {
             kind: VariableDeclarationKind::Let,
+        }
+    }
+
+    pub struct FunctionDeclarationBuilder {
+        id: Identifier,
+        generator: bool,
+    }
+
+    impl FunctionDeclarationBuilder {
+        pub fn body(self, block: BlockStatement) -> FunctionDeclaration {
+            FunctionDeclaration {
+                id: self.id,
+                generator: self.generator,
+                params: (),
+                body: block,
+            }
+        }
+    }
+
+    pub fn gen_func(id: Identifier) -> FunctionDeclarationBuilder {
+        FunctionDeclarationBuilder {
+            id,
+            generator: true,
         }
     }
 }
@@ -262,6 +301,7 @@ pub enum Expression {
     Binary(BinaryExpression),
     Yield(YieldExpression),
     Object(ObjectExpression),
+    Array(ArrayExpression),
 }
 
 impl Expression {
@@ -447,5 +487,19 @@ pub fn obj(props: Vec<(&str, Option<Expression>)>) -> ObjectExpression {
 impl ObjectExpression {
     pub fn into_expression(self) -> Expression {
         Expression::Object(self)
+    }
+}
+
+pub struct ArrayExpression {
+    pub elements: Vec<Expression>,
+}
+
+pub fn array(elements: Vec<Expression>) -> ArrayExpression {
+    ArrayExpression { elements }
+}
+
+impl ArrayExpression {
+    pub fn into_expression(self) -> Expression {
+        Expression::Array(self)
     }
 }

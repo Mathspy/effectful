@@ -2,13 +2,13 @@ use itertools::{Itertools, Position};
 use std::io;
 
 use super::{
-    ArrowFunctionExpression, BinaryExpression, BinaryOperator, BlockStatement, BooleanLiteral,
-    BreakStatement, CallExpression, ComputedMemberExpression, Declaration, Expression,
-    ExpressionStatement, Identifier, IfStatement, LiteralExpression, MemberExpression,
-    NumberLiteral, ObjectExpression, ObjectPattern, ObjectPatternProperty, ObjectProperty, Pattern,
-    Program, Statement, StatementOrDeclaration, StaticMemberExpression, StringLiteral,
-    VariableDeclaration, VariableDeclarationKind, VariableDeclarator, WhileStatement,
-    YieldExpression,
+    ArrayExpression, ArrowFunctionExpression, BinaryExpression, BinaryOperator, BlockStatement,
+    BooleanLiteral, BreakStatement, CallExpression, ComputedMemberExpression, Declaration,
+    Expression, ExpressionStatement, FunctionDeclaration, Identifier, IfStatement,
+    LiteralExpression, MemberExpression, NumberLiteral, ObjectExpression, ObjectPattern,
+    ObjectPatternProperty, ObjectProperty, Pattern, Program, Statement, StatementOrDeclaration,
+    StaticMemberExpression, StringLiteral, VariableDeclaration, VariableDeclarationKind,
+    VariableDeclarator, WhileStatement, YieldExpression,
 };
 
 pub struct EcmaWriter<W> {
@@ -118,6 +118,9 @@ where
             Declaration::Variable(variable_declaration) => {
                 self.write_variable_declaration(variable_declaration)
             }
+            Declaration::Function(function_declaration) => {
+                self.write_function_declaration(function_declaration)
+            }
         }
     }
 
@@ -167,6 +170,29 @@ where
         };
         bytes_written += self.writer.write(b"=")?;
         bytes_written += self.write_expression(&variable_declarator.init)?;
+
+        Ok(bytes_written)
+    }
+
+    fn write_function_declaration(
+        &mut self,
+        function_declaration: &FunctionDeclaration,
+    ) -> io::Result<usize> {
+        let mut bytes_written = 0;
+
+        bytes_written += self.writer.write(b"function")?;
+        bytes_written += if function_declaration.generator {
+            self.writer.write(b"* ")?
+        } else {
+            self.writer.write(b" ")?
+        };
+
+        bytes_written += self.write_identifier(&function_declaration.id)?;
+
+        // TODO: function_declaration.params
+        bytes_written += self.writer.write(b"()")?;
+
+        bytes_written += self.write_block_statement(&function_declaration.body)?;
 
         Ok(bytes_written)
     }
@@ -225,6 +251,7 @@ where
             Expression::Object(object_expression) => {
                 self.write_object_expression(object_expression)
             }
+            Expression::Array(array_expression) => self.write_array_expression(array_expression),
         }
     }
 
@@ -392,6 +419,27 @@ where
             bytes_written += self.write_expression(value)?;
         }
         bytes_written += self.writer.write(b",")?;
+
+        Ok(bytes_written)
+    }
+
+    fn write_array_expression(&mut self, array_expression: &ArrayExpression) -> io::Result<usize> {
+        let mut bytes_written = 0;
+
+        bytes_written += self.writer.write(b"[")?;
+        bytes_written += array_expression
+            .elements
+            .iter()
+            .map(|element| {
+                let mut bytes_written = 0;
+
+                bytes_written += self.write_expression(element)?;
+                bytes_written += self.writer.write(b",")?;
+
+                Ok(bytes_written)
+            })
+            .sum::<io::Result<usize>>()?;
+        bytes_written += self.writer.write(b"]")?;
 
         Ok(bytes_written)
     }
